@@ -1,0 +1,53 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == 'felipe.souza@a7.net.br' && request.auth.token.email_verified == true;
+    }
+
+    function isValidAppointment(data) {
+      return data.keys().hasAll([
+        'userId', 'name', 'phone', 'service', 'date', 'time', 
+        'barbershop', 'status', 'totalPrice', 'bookingFee', 
+        'dueAmount', 'paid', 'paymentMethod', 'createdAt'
+      ]) &&
+             data.keys().size() == 14 &&
+             data.userId is string &&
+             data.name is string &&
+             data.phone is string &&
+             data.status in ['pendente', 'confirmado', 'cancelado'] &&
+             data.totalPrice is number &&
+             data.barbershop == 'PK Barbershop' &&
+             data.createdAt == request.time;
+    }
+
+    match /appointments/{appointmentId} {
+      allow create: if isValidAppointment(request.resource.data);
+      // Allow reading a specific appointment (token-based via ID)
+      allow get: if true;
+      // Allow listing appointments if searching by phone or being an admin
+      allow list: if isAdmin() || resource.data.phone != null;
+      allow update, delete: if isAdmin();
+    }
+
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

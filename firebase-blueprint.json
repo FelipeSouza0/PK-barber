@@ -1,0 +1,63 @@
+{
+  "entities": {
+    "Appointment": {
+      "title": "Appointment",
+      "description": "A scheduled service at the barbershop.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID or identifier 'anonymous'." },
+        "name": { "type": "string", "description": "Customer name." },
+        "phone": { "type": "string", "description": "Customer phone number." },
+        "service": { "type": "string", "description": "Description of services selected." },
+        "date": { "type": "string", "description": "ISO date string." },
+        "time": { "type": "string", "description": "Time string in HH:mm format." },
+        "barbershop": { "type": "string", "description": "Name of the barbershop." },
+        "status": { "type": "string", "enum": ["confirmado", "cancelado", "pendente"], "description": "Current status." },
+        "totalPrice": { "type": "number", "description": "Full price of the services." },
+        "bookingFee": { "type": "number", "description": "Fee paid online." },
+        "dueAmount": { "type": "number", "description": "Amount to be paid at the barbershop." },
+        "paid": { "type": "boolean", "description": "Whether the booking fee is paid." },
+        "createdAt": { "type": "string", "description": "Creation timestamp." }
+      },
+      "required": ["userId", "name", "phone", "service", "date", "time", "status", "totalPrice", "bookingFee", "dueAmount", "paid", "createdAt"]
+    },
+    "Service": {
+      "title": "Service",
+      "description": "A hairstyle or grooming service offered.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "duration": { "type": "number" },
+        "price": { "type": "number" }
+      },
+      "required": ["name", "duration", "price"]
+    },
+    "Config": {
+      "title": "Config",
+      "description": "General application configuration.",
+      "type": "object",
+      "properties": {
+        "times": { 
+          "type": "object", 
+          "additionalProperties": { "type": "array", "items": { "type": "string" } },
+          "description": "Dictionary of days mapping to time arrays."
+        },
+        "blockedDays": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "firestore": {
+    "/appointments/{appointmentId}": {
+      "schema": "Appointment",
+      "description": "Collection of all appointments."
+    },
+    "/services/{serviceId}": {
+      "schema": "Service",
+      "description": "Collection of available services."
+    },
+    "/config/general": {
+      "schema": "Config",
+      "description": "General settings document."
+    }
+  }
+}
